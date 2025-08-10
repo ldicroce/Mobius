@@ -1,0 +1,33 @@
+# for .gitignore
+
+# Xcode
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# Swift Package Manager
+.build/
+Packages/
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+
+# playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Other
+*.xcworkspace
+*.xcdbgdata
+
+# macOS Finder metadata
+.DS_Store
