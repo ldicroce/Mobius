@@ -6,76 +6,115 @@
 //
 
 import SwiftUI
-import Combine
 
+/// Fully custom, resizable circular gauge.
 struct SixtyMinuteGauge: View {
-    private let total: TimeInterval = 10// 60 * 60
-    @State private var endDate: Date?
-    @State private var isRunning = false
-    @State private var remaining: TimeInterval = 10//60  * 60
-
-    // smooth updates
-    private let ticker = Timer.publish(every: 1/30, on: .main, in: .common).autoconnect()
-    private var progress: Double { 1 - remaining / total }
-
+    var progress: Double       // 0.0 → 1.0
+    var label: String          // text in center (e.g., "33m", "08:35")
+    var isPreAlert: Bool       // changes colors in last 10 minutes
+    var size: CGFloat = 300    // diameter of the gauge
+    var lineWidth: CGFloat = 30 // thickness of the ring
+    
     var body: some View {
-        VStack(spacing: 24) {
-            Gauge(value: progress, in: 0...1) {
-                Text(timeString(remaining))
-                    .font(.system(size: 36, weight: .regular, design: .rounded))
-            }
-            .gaugeStyle(.accessoryCircularCapacity) // ring style
-            .tint(Gradient(colors: [.red, .mint]))// 2‑color ring
-            .frame(width: 220, height: 220)
-            .onReceive(ticker) { _ in tick() }
-            .accessibilityLabel(Text("Timer")) // VoiceOver will read “Timer”
-            .accessibilityValue(Text(timeString(remaining)))
-
-            HStack(spacing: 16) {
-                Button("Cancel", role: .destructive) { reset() }
-                    .buttonStyle(.bordered)
-
-                Button(isRunning ? "Pause" : "Start") { toggle() }
-                    .buttonStyle(.borderedProminent)
-            }
+        ZStack {
+            // Background track
+            Circle()
+                .stroke(Color.gray.opacity(0.2), lineWidth: lineWidth)
+            
+            // Progress ring
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(
+                    AngularGradient(
+                        stops: isPreAlert
+                        ? [
+                            .init(color: .green, location: 0.0),   // green start
+                            .init(color: .green, location: 0.83),  // stay green until ~83%
+                            .init(color: .red,   location: 1.0)    // red for last ~17%
+                        ]
+                        : [
+                            .init(color: .green, location: 0.0),
+                            .init(color: .green, location: 1.0)   // fully green
+                        ],
+                        center: .center
+                    ),
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt) // flat ends
+                )
+                .rotationEffect(.degrees(-90)) // start from top
+            
+            // Center label (color matches alert status)
+            Text(label)
+                .font(.system(size: size * 0.15, weight: .regular, design: .rounded))
+                .foregroundColor(isPreAlert ? .red : .green)
         }
-        .padding(32)
-        .onAppear { reset() }
+        .frame(width: size, height: size)
+        .accessibilityLabel(Text("Timer"))
+        .accessibilityValue(Text(label))
     }
-
-    private func toggle() {
-        if isRunning {
-            // pause
-            remaining = max(0, endDate?.timeIntervalSinceNow ?? remaining)
-            endDate = nil
-            isRunning = false
-        } else {
-            // start/resume
-            endDate = Date().addingTimeInterval(remaining)
-            isRunning = true
-        }
-    }
-
-    private func reset() {
-        isRunning = false
-        endDate = nil
-        remaining = total
-    }
-
-    private func tick() {
-        guard isRunning, let end = endDate else { return }
-        remaining = max(0, end.timeIntervalSinceNow)
-        if remaining == 0 { isRunning = false }
-    }
-
-    private func timeString(_ t: TimeInterval) -> String {
-        let f = DateComponentsFormatter()
-        f.allowedUnits = t >= 3600 ? [.hour, .minute, .second] : [.minute, .second]
-        f.unitsStyle = .positional
-        f.zeroFormattingBehavior = [.pad]
-        return f.string(from: t) ?? "00:00"
+}
+struct GaugePreview: View {
+    let remainingMinutes: Double
+    var body: some View {
+        let progress = 1 - remainingMinutes / 60
+        let label = String(format: "%02.0f:00", remainingMinutes)
+        let preAlert = remainingMinutes <= 10
+        return SixtyMinuteGauge(progress: progress, label: label, isPreAlert: preAlert)
     }
 }
 #Preview {
-    SixtyMinuteGauge()
+    VStack(spacing: 40) {
+        GaugePreview(remainingMinutes: 45) // normal
+        GaugePreview(remainingMinutes: 9)  // pre-alert
+    }
 }
+
+
+
+//import SwiftUI
+//
+///// Fully custom, resizable circular gauge.
+//struct SixtyMinuteGauge: View {
+//    var progress: Double       // 0.0 → 1.0
+//    var label: String          // text in center (e.g., "33m", "08:35")
+//    var isPreAlert: Bool       // changes colors in last 10 minutes
+//    var size: CGFloat = 300    // diameter of the gauge
+//    var lineWidth: CGFloat = 30 // thickness of the ring
+//
+//    var body: some View {
+//        ZStack {
+//            // Background track
+//            Circle()
+//                .stroke(Color.gray.opacity(0.2), lineWidth: lineWidth)
+//
+//            // Progress ring
+//            Circle()
+//                .trim(from: 0, to: progress)
+//                .stroke(
+//                    AngularGradient(
+//                        colors: isPreAlert
+//                        ? [.green,.green,.green, .red]
+//                        : [.green],
+//                        // ? [.orange, .red]
+//                        //: [.green, .yellow, .orange, .red],
+//                        center: .center
+//                    ),
+//                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
+//                )
+//                .rotationEffect(.degrees(-90)) // start from top
+//
+//            // Center label
+//            Text(label)
+//                .font(.system(size: size * 0.15, weight: .regular, design: .rounded))
+//        }
+//        .frame(width: size, height: size)
+//        .accessibilityLabel(Text("Timer"))
+//        .accessibilityValue(Text(label))
+//    }
+//}
+//
+//#Preview {
+//    VStack(spacing: 40) {
+//        SixtyMinuteGauge(progress: 0.75, label: "15:00", isPreAlert: false)
+//        SixtyMinuteGauge(progress: 0.15, label: "05:00", isPreAlert: true)
+//    }
+//}
