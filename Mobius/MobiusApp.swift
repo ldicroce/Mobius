@@ -12,6 +12,7 @@ struct MobiusApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+           //  SixtyMinuteGauge()
         }
     }
 }
