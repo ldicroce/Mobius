@@ -177,7 +177,11 @@ final class StandTimerViewModel: ObservableObject {
     }
 
     // MARK: - Persistence
-
+    func clearLogs() {
+           logs.removeAll()
+           saveLogs()
+       }
+    
     private func saveLogs() {
         let timestamps = logs.map { $0.timeIntervalSince1970 }
         UserDefaults.standard.set(timestamps, forKey: storeKey)

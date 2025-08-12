@@ -9,11 +9,12 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var vm = StandTimerViewModel()
+    @State private var showClearAlert = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
 
-            // Top bar: title + snooze + switch (fixed height so layout won't shift)
+            // Top bar: title + snooze + switch
             HStack {
                 Text(vm.isInPreAlert ? "Time to get up!" : "")
                     .font(.system(size: 32, weight: .regular, design: .default))
@@ -35,7 +36,7 @@ struct ContentView: View {
             }
             .frame(height: 50)
 
-            // Auto-restart picker row (fixed height; always present to avoid shifting)
+            // Auto-restart picker row
             HStack {
                 Spacer()
                 Picker("Auto-Restart", selection: $vm.autoRestartSetting) {
@@ -76,11 +77,14 @@ struct ContentView: View {
             // Logs
             GroupBox {
                 VStack(alignment: .leading) {
-                    HStack {
+                    HStack(spacing: 12) {
                         Text("Time").fontWeight(.semibold)
                             .frame(maxWidth: .infinity, alignment: .leading)
+
                         Text("Logged").fontWeight(.semibold)
                             .frame(width: 80, alignment: .leading)
+
+                        Spacer()
                     }
                     .padding(.horizontal, 8)
 
@@ -99,21 +103,49 @@ struct ContentView: View {
                 .padding(8)
             }
 
-            Spacer()
+            // Bottom bar with Clear Log button + badge
+            HStack(spacing: 8) {
+                Spacer()
+
+                Button {
+                    showClearAlert = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Text("Clear Log")
+                        if vm.logs.count > 0 {
+                            Text("\(vm.logs.count)")
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.red.opacity(0.8))
+                                .foregroundColor(.white)
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(vm.logs.isEmpty)
+            }
+            .alert("Clear all log entries?", isPresented: $showClearAlert) {
+                Button("Cancel", role: .cancel) {}
+                Button("Clear", role: .destructive) {
+                    vm.clearLogs()
+                }
+            } message: {
+                Text("This action cannot be undone.")
+            }
         }
         .padding(24)
     }
 
     // MARK: - Helpers
 
-    // When counting up, keep the ring full.
     private var gaugeProgress: Double {
         if vm.isCountingUp { return 1.0 }
         let p = 1 - vm.remaining / vm.total
         return min(max(p, 0), 1)
     }
 
-    // Center label: shows mm:ss remaining, then mm:ss elapsed after zero.
     private var centerLabel: String {
         let t = vm.isCountingUp ? vm.elapsedAfterZero : vm.remaining
         let m = Int(t) / 60
