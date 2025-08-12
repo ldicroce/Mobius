@@ -5,16 +5,15 @@
 //  Created by Luciano Di Croce on 9/8/25.
 //
 
-
 import SwiftUI
 
 struct ContentView: View {
     @StateObject private var vm = StandTimerViewModel()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: 16) {
 
-            // One fixed-height row for title + snooze + switch
+            // Top bar: title + snooze + switch (fixed height so layout won't shift)
             HStack {
                 Text(vm.isInPreAlert ? "Time to get up!" : "")
                     .font(.system(size: 32, weight: .regular, design: .default))
@@ -34,7 +33,20 @@ struct ContentView: View {
                 .toggleStyle(.switch)
                 .frame(width: 140)
             }
-            .frame(height: 50) // keeps layout from shifting
+            .frame(height: 50)
+
+            // Auto-restart picker row (fixed height; always present to avoid shifting)
+            HStack {
+                Spacer()
+                Picker("Auto-Restart", selection: $vm.autoRestartSetting) {
+                    ForEach(StandTimerViewModel.AutoRestartSetting.allCases, id: \.self) { setting in
+                        Text(setting.label).tag(setting)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(maxWidth: 320)
+            }
+            .frame(height: 36)
 
             // Gauge + controls
             HStack(spacing: 28) {
@@ -48,9 +60,6 @@ struct ContentView: View {
                 )
 
                 VStack(alignment: .leading, spacing: 12) {
-//                    Text(bigTimeString)
-//                        .font(.system(size: 48, weight: .medium, design: .rounded))
-
                     HStack(spacing: 12) {
                         Button("I stood up") { vm.stoodUpNow() }
                             .buttonStyle(.borderedProminent)
@@ -106,23 +115,10 @@ struct ContentView: View {
 
     // Center label: shows mm:ss remaining, then mm:ss elapsed after zero.
     private var centerLabel: String {
-        if vm.isCountingUp {
-            let t = vm.elapsedAfterZero
-            let m = Int(t) / 60
-            let s = Int(t) % 60
-            return String(format: "%02d:%02d", m, s)
-        } else {
-            let t = vm.remaining
-            let m = Int(t) / 60
-            let s = Int(t) % 60
-            return String(format: "%02d:%02d", m, s)
-        }
-    }
-
-    // Big label at the side: minutes or seconds; shows elapsed when counting up.
-    private var bigTimeString: String {
         let t = vm.isCountingUp ? vm.elapsedAfterZero : vm.remaining
-        return t >= 60 ? "\(Int(t / 60))m" : "\(Int(t))s"
+        let m = Int(t) / 60
+        let s = Int(t) % 60
+        return String(format: "%02d:%02d", m, s)
     }
 
     private func timeOnly(_ date: Date) -> String {
