@@ -11,7 +11,7 @@ import Combine
 final class StandTimerViewModel: ObservableObject {
     // Config
     let total: TimeInterval = 10// 60 * 60          // 60 minutes
-    let preAlertWindow: TimeInterval = 2// 10 * 60 // last 10 minutes
+    let preAlertWindow: TimeInterval = 3// 10 * 60 // last 10 minutes
 
     // UI state
     @Published var isEnabled = false {
@@ -19,11 +19,18 @@ final class StandTimerViewModel: ObservableObject {
     }
     @Published var remaining: TimeInterval
     @Published var isInPreAlert = false
+
+    // Count-up phase (after time reaches 0)
+    @Published var isCountingUp = false
+    @Published var elapsedAfterZero: TimeInterval = 0
+
+    // Logs
     @Published var logs: [Date] = []
 
     // Internals
     private var endDate: Date?
     private var ticker: AnyCancellable?
+    private var countUpStart: Date?
 
     init() {
         remaining = total
@@ -41,11 +48,18 @@ final class StandTimerViewModel: ObservableObject {
     func toggleEnabled(_ on: Bool) { isEnabled = on }
 
     func stoodUpNow() {
+        // Log, reset to a fresh 60 minutes, keep running if enabled
         logs.insert(Date(), at: 0)
         saveLogs()
+
+        // Reset all counters
         remaining = total
-        if isEnabled { endDate = Date().addingTimeInterval(remaining) }
+        isCountingUp = false
+        elapsedAfterZero = 0
+        countUpStart = nil
         isInPreAlert = false
+
+        if isEnabled { endDate = Date().addingTimeInterval(remaining) }
     }
 
     func cancel() {
@@ -53,31 +67,63 @@ final class StandTimerViewModel: ObservableObject {
         remaining = total
         endDate = nil
         isInPreAlert = false
+
+        isCountingUp = false
+        elapsedAfterZero = 0
+        countUpStart = nil
     }
 
     // MARK: - Engine
 
     private func startOrResume() {
-        endDate = Date().addingTimeInterval(remaining)
+        if isCountingUp {
+            // resume count-up
+            countUpStart = Date().addingTimeInterval(-elapsedAfterZero)
+        } else {
+            // resume countdown
+            endDate = Date().addingTimeInterval(remaining)
+        }
     }
 
     private func pause() {
-        if let end = endDate { remaining = max(0, end.timeIntervalSinceNow) }
-        endDate = nil
+        if isCountingUp {
+            // capture elapsed and stop ticking up
+            if let start = countUpStart {
+                elapsedAfterZero = max(0, Date().timeIntervalSince(start))
+            }
+            countUpStart = nil
+        } else {
+            // capture remaining and stop countdown
+            if let end = endDate {
+                remaining = max(0, end.timeIntervalSinceNow)
+            }
+            endDate = nil
+        }
     }
 
     private func tick() {
-        guard isEnabled, let end = endDate else { return }
-        remaining = max(0, end.timeIntervalSinceNow)
+        guard isEnabled else { return }
 
-        let wasPreAlert = isInPreAlert
-        isInPreAlert = remaining <= preAlertWindow
-        if isInPreAlert && !wasPreAlert {
-            // Placeholder for notifications in next iteration
+        if isCountingUp {
+            // keep counting up
+            elapsedAfterZero = max(0, Date().timeIntervalSince(countUpStart ?? Date()))
+            isInPreAlert = true // keep warning state while counting up
+            return
         }
 
+        // normal countdown
+        guard let end = endDate else { return }
+        remaining = max(0, end.timeIntervalSinceNow)
+
+        // enter pre-alert in last 10 minutes
+        isInPreAlert = remaining <= preAlertWindow
+
         if remaining == 0 {
-            isEnabled = false
+            // switch to count-up mode
+            isCountingUp = true
+            countUpStart = Date()
+            elapsedAfterZero = 0
+            isInPreAlert = true
             endDate = nil
         }
     }

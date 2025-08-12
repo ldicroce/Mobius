@@ -5,7 +5,6 @@
 //  Created by Luciano Di Croce on 9/8/25.
 //
 
-import SwiftUI
 
 import SwiftUI
 
@@ -17,7 +16,7 @@ struct ContentView: View {
 
             // One fixed-height row for title + snooze + switch
             HStack {
-                Text(vm.isInPreAlert ? "Time to get up?" : "")
+                Text(vm.isInPreAlert ? "Time to get up!" : "")
                     .font(.system(size: 32, weight: .regular, design: .default))
 
                 Spacer()
@@ -35,10 +34,7 @@ struct ContentView: View {
                 .toggleStyle(.switch)
                 .frame(width: 140)
             }
-            .frame(height: 50) // ✅ Always this tall, even without text
-
-
-            // --- rest of your layout (gauge + controls + logs) ---
+            .frame(height: 50) // keeps layout from shifting
 
             // Gauge + controls
             HStack(spacing: 28) {
@@ -46,8 +42,8 @@ struct ContentView: View {
                     progress: gaugeProgress,
                     label: centerLabel,
                     isPreAlert: vm.isInPreAlert,
-                    size: 120,      // outer diameter
-                    lineWidth: 10   // ring thickness
+                    size: 160,
+                    lineWidth: 14
                 )
 
                 VStack(alignment: .leading, spacing: 12) {
@@ -55,16 +51,12 @@ struct ContentView: View {
 //                        .font(.system(size: 48, weight: .medium, design: .rounded))
 
                     HStack(spacing: 12) {
-                        Button("I stood up") {
-                            vm.stoodUpNow()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!vm.isEnabled)
+                        Button("I stood up") { vm.stoodUpNow() }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(!vm.isEnabled)
 
-                        Button("Cancel", role: .destructive) {
-                            vm.cancel()
-                        }
-                        .buttonStyle(.bordered)
+                        Button("Cancel", role: .destructive) { vm.cancel() }
+                            .buttonStyle(.bordered)
                     }
                 }
 
@@ -104,22 +96,32 @@ struct ContentView: View {
 
     // MARK: - Helpers
 
+    // When counting up, keep the ring full.
     private var gaugeProgress: Double {
+        if vm.isCountingUp { return 1.0 }
         let p = 1 - vm.remaining / vm.total
         return min(max(p, 0), 1)
     }
 
+    // Center label: shows mm:ss remaining, then mm:ss elapsed after zero.
     private var centerLabel: String {
-        let t = vm.remaining
-        let m = Int(t) / 60
-        let s = Int(t) % 60
-        return String(format: "%02d:%02d", m, s)
+        if vm.isCountingUp {
+            let t = vm.elapsedAfterZero
+            let m = Int(t) / 60
+            let s = Int(t) % 60
+            return String(format: "%02d:%02d", m, s)
+        } else {
+            let t = vm.remaining
+            let m = Int(t) / 60
+            let s = Int(t) % 60
+            return String(format: "%02d:%02d", m, s)
+        }
     }
 
+    // Big label at the side: minutes or seconds; shows elapsed when counting up.
     private var bigTimeString: String {
-        vm.remaining >= 60
-        ? "\(Int(vm.remaining / 60))m"
-        : "\(Int(vm.remaining))s"
+        let t = vm.isCountingUp ? vm.elapsedAfterZero : vm.remaining
+        return t >= 60 ? "\(Int(t / 60))m" : "\(Int(t))s"
     }
 
     private func timeOnly(_ date: Date) -> String {
