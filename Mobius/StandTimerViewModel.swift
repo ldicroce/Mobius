@@ -19,7 +19,7 @@ import Combine
 
 final class StandTimerViewModel: ObservableObject {
     // MARK: - Configuration
-    let total: TimeInterval = 10// 60 * 60          // 60 minutes
+    let total: TimeInterval = 10 //60 * 60          // 60 minutes
     let preAlertWindow: TimeInterval = 2 //10 * 60 // last 10 minutes
 
     // MARK: - Auto-restart settings
