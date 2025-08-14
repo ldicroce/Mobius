@@ -16,12 +16,12 @@ final class AppViewModel: ObservableObject {
         case compactTimer = "Compact Timer"
         var id: String { rawValue }
     }
-
+    
     @Published var viewMode: ViewMode = .timerAndLogs
-
-    #if os(macOS)
+    
+#if os(macOS)
     weak var mainWindow: NSWindow?
-
+    
     func showMainWindow() {
         if let w = mainWindow {
             w.makeKeyAndOrderFront(nil)
@@ -31,7 +31,13 @@ final class AppViewModel: ObservableObject {
         }
         NSApp.activate(ignoringOtherApps: true)
     }
-    #endif
+    
+    /// Unified helper you can call from anywhere in the UI/menus.
+    /// (Because we intercept Close and only hide, this is enough.)
+    func bringToFrontOrOpen() {
+        showMainWindow()
+    }
+#endif
 }
 
 // These provided unified values for the window size

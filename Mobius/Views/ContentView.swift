@@ -14,18 +14,19 @@ struct ContentView: View {
     var body: some View {
         Group {
             switch appVM.viewMode {
-            case .timerAndLogs: TimerAndLogsView(vm: vm)
-            case .compactTimer: CompactTimerView(vm: vm)
+            case .timerAndLogs:  TimerAndLogsView(vm: vm)
+            case .compactTimer:  CompactTimerView(vm: vm)
             }
         }
         #if os(macOS)
-        .background(WindowRefSaver(appVM: appVM)) // ← capture window
-        .onChange(of: appVM.viewMode) { _ in
-            appVM.showMainWindow()               // ← ensure it reappears on layout change
+        .background(WindowRefSaver(appVM: appVM))  // capture window reference
+        .onChange(of: appVM.viewMode) { _ in       // optional convenience
+            appVM.bringToFrontOrOpen()
         }
         #endif
     }
 }
+
 
 
 

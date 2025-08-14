@@ -97,12 +97,10 @@ private final class ChainedWindowDelegate: NSObject, NSWindowDelegate {
         return chained
     }
     func windowShouldClose(_ sender: NSWindow) -> Bool {
-        // Let prior delegate observe the event if it wants
-        _ = prior?.windowShouldClose?(sender)
-
-        // Hide instead of closing (so we can re-show later)
-        sender.orderOut(nil)
-        return false
+        _ = prior?.windowShouldClose?(sender) // let prior observe if needed
+        sender.orderOut(nil)                  // hide instead of close
+        return false                          // prevent window destruction
     }
+
 }
 #endif

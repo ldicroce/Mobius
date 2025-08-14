@@ -27,9 +27,10 @@ struct WindowRefSaver: NSViewRepresentable {
     private func attach(to v: NSView) {
         if let w = v.window {
             appVM.mainWindow = w
-            w.isReleasedWhenClosed = false
+            w.isReleasedWhenClosed = false // don't destroy; we'll hide on close
         }
     }
 }
 #endif
+
 
