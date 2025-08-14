@@ -65,8 +65,11 @@ struct SixtyMinuteGauge: View {
     private var endColor: Color {
         isWarmState ? .red : .pink            // push to red when pre-alert / overtime
     }
+//    private var centerTextColor: Color {
+//        isWarmState ? .secondary : .primary
+//    }
     private var centerTextColor: Color {
-        isWarmState ? .red : .primary
+        isCountingUp ? .red : .primary
     }
 }
 

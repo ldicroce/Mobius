@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		E73793EC2E47BDF10018DAF8 /* Mobius.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mobius.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E73793EC2E47BDF10018DAF8 /* Mobius.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = Mobius.app; path = "/Users/ldicroce/Library/Mobile Documents/com~apple~CloudDocs/XCode/Projects/Mobius/build/Debug/Mobius.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -33,16 +33,7 @@
 			isa = PBXGroup;
 			children = (
 				E73793EE2E47BDF10018DAF8 /* Mobius */,
-				E73793ED2E47BDF10018DAF8 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		E73793ED2E47BDF10018DAF8 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				E73793EC2E47BDF10018DAF8 /* Mobius.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -95,7 +86,7 @@
 			mainGroup = E73793E32E47BDF00018DAF8;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = E73793ED2E47BDF10018DAF8 /* Products */;
+			productRefGroup = E73793E32E47BDF00018DAF8;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
