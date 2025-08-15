@@ -29,9 +29,7 @@ struct ContentView: View {
         // Enforce the *minimum* while the user resizes
         .background(WindowMinSizeEnforcer(minWidth: spec.min.width,
                                           minHeight: spec.min.height))
-        .onChange(of: appVM.viewMode) { _, _ in
-            appVM.bringToFrontOrOpen()
-        }
+        .onChange(of: appVM.viewMode) { _, _ in appVM.bringToFrontOrOpen() }
         #endif
     }
 }

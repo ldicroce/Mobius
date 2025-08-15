@@ -15,13 +15,13 @@ struct CompactTimerView: View {
             // Gauge + controls (no logs)
             HStack(spacing: 28) {
                 SixtyMinuteGauge(
-                    progress: gaugeProgress,
-                    label: centerLabel,
-                    isPreAlert: vm.isInPreAlert,
-                    isCountingUp: vm.isCountingUp,
-                    size: 120,
-                    lineWidth: 10
+                  progress: vm.gaugeProgress,
+                  label: vm.centerLabel,
+                  isPreAlert: vm.isInPreAlert,
+                  isCountingUp: vm.isCountingUp,
+                  size: 120, lineWidth: 10
                 )
+
                 
                 VStack(alignment: .center, spacing: 32) {
                     Text(vm.isInPreAlert ? "Time to get up!" : "")

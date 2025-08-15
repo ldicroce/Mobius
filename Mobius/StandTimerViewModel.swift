@@ -191,4 +191,15 @@ final class StandTimerViewModel: ObservableObject {
         let timestamps = UserDefaults.standard.array(forKey: storeKey) as? [TimeInterval] ?? []
         logs = timestamps.sorted(by: >).map { Date(timeIntervalSince1970: $0) }
     }
+    
+}
+
+extension StandTimerViewModel {
+    var gaugeProgress: Double {
+        isCountingUp ? 1 : min(max(1 - remaining / total, 0), 1)
+    }
+    var centerLabel: String {
+        let t = isCountingUp ? elapsedAfterZero : remaining
+        return String(format: "%02d:%02d", Int(t)/60, Int(t)%60)
+    }
 }

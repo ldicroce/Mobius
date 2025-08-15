@@ -19,9 +19,7 @@ struct ViewModeCommands: Commands {
                 Text("Timer & Logs").tag(AppViewModel.ViewMode.timerAndLogs)
                 Text("Compact Timer").tag(AppViewModel.ViewMode.compactTimer)
             }
-            .onChange(of: appVM.viewMode) { _, _ in          // ← two params (old, new)
-                appVM.bringToFrontOrOpen()
-            }
+            .onChange(of: appVM.viewMode) { _, _ in appVM.bringToFrontOrOpen() }
 
             Divider()
 

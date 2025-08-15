@@ -17,12 +17,11 @@ struct TimerAndLogsView: View {
             // Gauge + controls (your current layout)
             HStack(spacing: 28) {
                 SixtyMinuteGauge(
-                    progress: gaugeProgress,
-                    label: centerLabel,
-                    isPreAlert: vm.isInPreAlert,
-                    isCountingUp: vm.isCountingUp,
-                    size: 120,
-                    lineWidth: 10
+                  progress: vm.gaugeProgress,
+                  label: vm.centerLabel,
+                  isPreAlert: vm.isInPreAlert,
+                  isCountingUp: vm.isCountingUp,
+                  size: 120, lineWidth: 10
                 )
 
                 VStack(alignment: .center, spacing: 32) {

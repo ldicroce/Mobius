@@ -17,7 +17,13 @@ final class AppViewModel: ObservableObject {
         var id: String { rawValue }
     }
     
-    @Published var viewMode: ViewMode = .timerAndLogs
+    //@Published var viewMode: ViewMode = .timerAndLogs // this is the standar way buut with the code below ...
+    //  Persist the selected layout (so it sticks across launches)
+    @AppStorage("viewMode") var viewModeRaw: String = ViewMode.timerAndLogs.rawValue
+    var viewMode: ViewMode {
+        get { ViewMode(rawValue: viewModeRaw) ?? .timerAndLogs }
+        set { viewModeRaw = newValue.rawValue }
+    }
     
 #if os(macOS)
     weak var mainWindow: NSWindow?
