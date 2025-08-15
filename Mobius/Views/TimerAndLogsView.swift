@@ -45,6 +45,7 @@ struct TimerAndLogsView: View {
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.large)
+                        .disabled(true).help("Coming soon")
 
                         Toggle(isOn: $vm.isEnabled) {
                             Text(vm.isEnabled ? "ON" : "OFF")
@@ -146,10 +147,9 @@ struct TimerAndLogsView: View {
         return String(format: "%02d:%02d", m, s)
     }
 
-    private func timeOnly(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.timeStyle = .short
-        return f.string(from: date)
-    }
+    // make the formatter static to avoid rebuild cost
+    private static let timeFormatter: DateFormatter = { let f = DateFormatter(); f.timeStyle = .short; return f }()
+    private func timeOnly(_ d: Date) -> String { Self.timeFormatter.string(from: d) }
+
 }
 
