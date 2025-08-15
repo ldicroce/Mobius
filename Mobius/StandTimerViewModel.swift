@@ -21,7 +21,11 @@ final class StandTimerViewModel: ObservableObject {
     // MARK: - Configuration
     let total: TimeInterval = 10 //60 * 60          // 60 minutes
     let preAlertWindow: TimeInterval = 2 //10 * 60 // last 10 minutes
-
+    
+    // MARK: - Persistence keys
+    private let isEnabledKey = "StandTimer.IsEnabled"
+    private let autoRestartKey = "StandTimer.AutoRestart"
+    
     // MARK: - Auto-restart settings
     enum AutoRestartSetting: TimeInterval, CaseIterable {
         case off = 0
@@ -38,11 +42,18 @@ final class StandTimerViewModel: ObservableObject {
             }
         }
     }
-    @Published var autoRestartSetting: AutoRestartSetting = .off
-
+    @Published var autoRestartSetting: AutoRestartSetting = .off {
+        didSet {
+            UserDefaults.standard.set(autoRestartSetting.rawValue, forKey: autoRestartKey)
+        }
+    }
+    
     // MARK: - Published UI State
     @Published var isEnabled: Bool = false {   // switch ON/OFF drives start/pause
-        didSet { isEnabled ? startOrResume() : pause() }
+        didSet {
+            UserDefaults.standard.set(isEnabled, forKey: isEnabledKey)
+            isEnabled ? startOrResume() : pause()
+        }
     }
     @Published var remaining: TimeInterval
     @Published var isInPreAlert: Bool = false
@@ -72,6 +83,16 @@ final class StandTimerViewModel: ObservableObject {
             .sink { [weak self] _ in self?.tick() }
 
         loadLogs()
+        // Restore Auto-Restart (if previously set)
+        let savedAuto = UserDefaults.standard.object(forKey: autoRestartKey)
+        if let raw = savedAuto as? Double, let setting = AutoRestartSetting(rawValue: raw) {
+            autoRestartSetting = setting
+        }
+
+        // Restore ON/OFF and (if true) start a fresh cycle
+        let savedEnabled = UserDefaults.standard.object(forKey: isEnabledKey) as? Bool ?? false
+        isEnabled = savedEnabled
+
     }
 
     // MARK: - User Actions
